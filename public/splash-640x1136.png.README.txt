@@ -1,0 +1,5 @@
+# Splash Screen Placeholder
+
+ضع هنا صورة splash screen بمقاس 640x1136 بكسل (PNG). يمكنك استبدال هذا الملف لاحقًا بصورة حقيقية تحمل شعار التطبيق أو ألوان العلامة التجارية.
+
+مثال: استخدم أداة مثل https://maskable.app/editor أو https://pwabuilder.com/imageGenerator لتوليد splash images تلقائيًا من الأيقونة.
