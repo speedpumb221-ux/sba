@@ -178,5 +178,25 @@
             @endauth
         </div>
     </div>
+        <script>
+            // Navigation fallback for devices where anchor navigation may be blocked
+            (function(){
+                try{
+                    document.querySelectorAll('.btn').forEach(function(el){
+                        // If the element is an anchor, ensure it navigates on touchend as a fallback
+                        if(el.tagName.toLowerCase() === 'a'){
+                            el.addEventListener('touchend', function(ev){
+                                try{ window.location.href = el.href; }catch(e){}
+                            });
+                            // also add click defensive handler
+                            el.addEventListener('click', function(ev){
+                                // allow normal navigation; but if prevented elsewhere, force after tiny delay
+                                setTimeout(function(){ if(window.location.pathname === window.location.pathname) { window.location.href = el.href; } }, 150);
+                            });
+                        }
+                    });
+                }catch(e){console.warn('Nav fallback failed', e);} 
+            })();
+        </script>
 </body>
 </html>

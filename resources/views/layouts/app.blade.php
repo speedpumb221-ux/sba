@@ -12,8 +12,8 @@
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     
     <!-- Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icon-192.png') }}">
-    <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('icon-512.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icon-192x192.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('icon-512x512.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('icon-192.png') }}">
     
     <!-- Styles -->
@@ -331,7 +331,7 @@
     </script>
 
     {{-- Bust cached service-worker copy when updating alert script by adding version param --}}
-    <button id="pwa-install-btn" aria-hidden="true" style="display:none; position:fixed; bottom:88px; left:16px; z-index:200000; padding:10px 14px; border-radius:10px; background:#059669; color:#fff; border:none; box-shadow:0 8px 20px rgba(0,0,0,0.18); font-weight:600;">تثبيت التطبيق</button>
+    <button id="pwa-install-btn" style="display:none; position:fixed; bottom:88px; left:16px; z-index:200000; padding:10px 14px; border-radius:10px; background:#059669; color:#fff; border:none; box-shadow:0 8px 20px rgba(0,0,0,0.18); font-weight:600;" tabindex="-1">تثبيت التطبيق</button>
 
     <script>
     (function(){
@@ -341,10 +341,10 @@
         window.addEventListener('beforeinstallprompt', function(e){
             try{ e.preventDefault(); }catch(_){ }
             deferredPrompt = e;
-            if(btn){ btn.style.display = 'block'; btn.setAttribute('aria-hidden','false'); }
+            if(btn){ btn.style.display = 'block'; btn.setAttribute('tabindex','0'); btn.focus(); }
         });
 
-        function hideBtn(){ if(btn){ btn.style.display = 'none'; btn.setAttribute('aria-hidden','true'); } }
+        function hideBtn(){ if(btn){ btn.style.display = 'none'; btn.setAttribute('tabindex','-1'); } }
 
         if(btn){
             btn.addEventListener('click', function(){
