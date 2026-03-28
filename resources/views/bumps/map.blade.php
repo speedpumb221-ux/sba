@@ -150,6 +150,81 @@
         }
         #alert-box { position: absolute; left: 50%; transform: translateX(-50%); top: 16px; z-index: 1300; width: auto; }
     }
+
+    /* Strong mobile overrides to avoid floating/overlay controls covering the map
+       map-3d.css sets .map-container fixed and .map-controls absolute; override those
+       on smaller screens so controls flow below the map and are touch-friendly. */
+    @media (max-width: 991px) {
+        .map-container {
+            position: static !important;
+            height: auto !important;
+            max-height: none !important;
+            width: 100% !important;
+            padding: 12px !important;
+            perspective: none !important;
+            overflow: visible !important;
+        }
+
+        .map-frame {
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: none !important;
+        }
+
+        #map {
+            height: 50vh !important;
+            min-height: 320px !important;
+        }
+
+        /* Make cards flow below the map and be full-width */
+        .map-cards {
+            position: static !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-top: 12px !important;
+            padding: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 12px !important;
+            z-index: 2 !important;
+        }
+
+        .map-controls {
+            position: static !important;
+            top: auto !important;
+            right: auto !important;
+            left: auto !important;
+            z-index: 2 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+            pointer-events: auto !important;
+        }
+
+        .control-card {
+            min-width: auto !important;
+            max-width: none !important;
+            width: 100% !important;
+            box-shadow: 0 6px 18px rgba(2,6,23,0.06) !important;
+            background: var(--bg-primary) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+
+        .stats-box {
+            position: static !important;
+            width: 100% !important;
+            margin-top: 6px !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            z-index: 2 !important;
+        }
+
+        #alert-box { position: static !important; transform: none !important; top: auto !important; left: auto !important; width: 100% !important; z-index: 1400 !important; }
+    }
 </style>
 @endsection
 
