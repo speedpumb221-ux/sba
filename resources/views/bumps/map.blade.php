@@ -73,22 +73,106 @@
             transform: rotate(360deg);
         }
     }
+
+    /* Responsive layout: map framed, controls below on mobile */
+    .map-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+        width: 100%;
+        padding: 0 12px;
+        box-sizing: border-box;
+    }
+
+    .map-frame {
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 10px 30px rgba(2,6,23,0.06);
+        background: var(--bg-primary);
+        position: relative;
+    }
+
+    #map {
+        width: 100%;
+        height: 60vh;
+        min-height: 320px;
+        display: block;
+    }
+
+    .map-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
+        padding-bottom: 8px;
+    }
+
+    .control-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        padding: 12px;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(2,6,23,0.04);
+    }
+
+    .stats-box {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Desktop / large screens: overlay controls to the right */
+    @media (min-width: 992px) {
+        .map-container { padding: 0; }
+        .map-container { position: relative; }
+        .map-frame { height: calc(100vh - 160px); min-height: 480px; }
+        #map { height: 100%; }
+        .map-cards {
+            position: absolute;
+            right: 18px;
+            top: 80px;
+            width: 320px;
+            max-height: calc(100vh - 160px);
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1200;
+        }
+        .stats-box {
+            position: absolute;
+            left: 18px;
+            bottom: 18px;
+            width: 260px;
+            z-index: 1200;
+        }
+        #alert-box { position: absolute; left: 50%; transform: translateX(-50%); top: 16px; z-index: 1300; width: auto; }
+    }
 </style>
 @endsection
 
 @section('content')
 <!-- Map Container -->
 <div class="map-container">
-    <div id="map"></div>
+    <div class="map-frame">
+        <div id="map"></div>
 
-    <!-- Loading Indicator -->
-    <div id="map-loading" class="map-loading" style="display: none;">
-        <div class="map-loading-spinner"></div>
-        <p style="color: var(--text-secondary); font-weight: 500;">جاري تحميل الخريطة...</p>
+        <!-- Loading Indicator -->
+        <div id="map-loading" class="map-loading" style="display: none;">
+            <div class="map-loading-spinner"></div>
+            <p style="color: var(--text-secondary); font-weight: 500;">جاري تحميل الخريطة...</p>
+        </div>
+
+        <!-- Alert Box (kept inside frame) -->
+        <div id="alert-box" class="alert-box" style="display: none;"></div>
     </div>
 
-    <!-- Map Controls -->
-    <div class="map-controls">
+    <!-- Cards Panel (controls + stats) -->
+    <div class="map-cards">
+        <!-- Map Controls -->
+        <div class="map-controls">
         <!-- Alert Distance Control -->
         <div class="control-card">
             <div class="control-card-header">
@@ -156,15 +240,10 @@
                 📍 موقعي الحالي
             </button>
         </div>
-    </div>
+        </div>
 
-    <!-- Alert Box -->
-    <div id="alert-box" class="alert-box" style="display: none;">
-        <!-- Alert will be inserted here -->
-    </div>
-
-    <!-- Stats Box -->
-    <div class="stats-box control-card">
+        <!-- Stats Box -->
+        <div class="stats-box control-card">
         <div class="control-card-header">
             <span class="control-card-icon">📊</span>
             <span>الإحصائيات</span>
