@@ -44,7 +44,12 @@ self.addEventListener('activate', event => {
 
 // Fetch event - Network first, then cache
 function isRedirectResponse(res) {
-    return res && (res.type === 'opaqueredirect' || res.redirected === true);
+    if(!res) return false;
+    // opaque redirect or explicitly redirected
+    if(res.type === 'opaqueredirect' || res.redirected === true) return true;
+    // also treat 3xx HTTP statuses as redirects when cached
+    if(res.status >= 300 && res.status < 400) return true;
+    return false;
 }
 
 self.addEventListener('fetch', event => {
@@ -77,11 +82,47 @@ self.addEventListener('fetch', event => {
         event.respondWith(
             caches.match(event.request)
                 .then(response => {
-                    if (response && isRedirectResponse(response)) {
-                        return fetch(event.request, { redirect: 'follow' });
-                    }
-                    return response || fetch(event.request);
+                    // don't serve cached redirect responses
+                    if (response && isRedirectResponse(response)) response = null;
+                    return response || fetch(event.request, { redirect: 'follow' }).then(res => {
+                        // only cache successful, non-redirect responses
+                        if (res && res.status === 200 && !isRedirectResponse(res)) {
+                            const copy = res.clone();
+                            caches.open(CACHE_NAME).then(c => c.put(event.request, copy));
+                        }
+                        return res;
+                    }).catch(() => response);
                 })
+        );
+        return;
+    }
+
+    // Default dynamic behavior: network first, then cache
+    // Special handling for navigations (HTML pages)
+    if (event.request.mode === 'navigate' || (event.request.headers.get('accept') || '').includes('text/html')) {
+        event.respondWith(
+            fetch(event.request, { redirect: 'follow' })
+                .then(response => {
+                    // If server returned a redirect (e.g. language switch redirect), do NOT forward a cached redirect to the client
+                    if (isRedirectResponse(response) || (response && response.status >= 400)) {
+                        return caches.match('/').then(fallback => fallback || new Response('Offline', {
+                            status: response && response.status ? response.status : 503,
+                            statusText: response && response.statusText ? response.statusText : 'Service Unavailable',
+                            headers: new Headers({ 'Content-Type': 'text/plain' })
+                        }));
+                    }
+                    // cache successful HTML responses
+                    if (response && response.status === 200 && !isRedirectResponse(response)) {
+                        const responseToCache = response.clone();
+                        caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseToCache));
+                    }
+                    return response;
+                })
+                .catch(() => caches.match('/').then(fallback => fallback || new Response('Offline', {
+                    status: 503,
+                    statusText: 'Service Unavailable',
+                    headers: new Headers({ 'Content-Type': 'text/plain' })
+                })))
         );
         return;
     }
@@ -98,11 +139,21 @@ self.addEventListener('fetch', event => {
                 }
                 return response;
             })
-            .catch(() => caches.match(event.request).then(cached => cached || new Response('Offline', {
-                status: 503,
-                statusText: 'Service Unavailable',
-                headers: new Headers({ 'Content-Type': 'text/plain' })
-            })))
+            .catch(() => caches.match(event.request).then(cached => {
+                // Don't return a cached redirect response; prefer a safe cached '/' or an offline response
+                if (cached && isRedirectResponse(cached)) {
+                    return caches.match('/').then(fallback => fallback || new Response('Offline', {
+                        status: 503,
+                        statusText: 'Service Unavailable',
+                        headers: new Headers({ 'Content-Type': 'text/plain' })
+                    }));
+                }
+                return cached || new Response('Offline', {
+                    status: 503,
+                    statusText: 'Service Unavailable',
+                    headers: new Headers({ 'Content-Type': 'text/plain' })
+                });
+            }))
     );
 });
 

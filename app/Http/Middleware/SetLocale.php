@@ -3,53 +3,27 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\App;
-
-class SetLocale
-{
-    /**
-     * Handle an incoming request.
-     */
-    public function handle($request, Closure $next)
-    {
-        $locale = session('locale', config('app.locale'));
-        if ($locale) {
-            App::setLocale($locale);
-        }
-
-        return $next($request);
-    }
-}
-<?php
-
-namespace App\Http\Middleware;
-
-use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\App;
-use Symfony\Component\HttpFoundation\Response;
 
 class SetLocale
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        // Check if user is authenticated and has language preference
-        if (Auth::check()) {
-            $userLanguage = Auth::user()->getSettingsOrCreate()->language ?? 'ar';
-            App::setLocale($userLanguage);
+        // Prefer an authenticated user's preference when available
+        $user = Auth::user();
+        if ($user && isset($user->language) && $user->language) {
+            $locale = $user->language;
         } else {
-            // Check for language in session or request
-            $language = session('locale', $request->get('lang', config('app.locale')));
-            if (in_array($language, ['en', 'ar'])) {
-                App::setLocale($language);
-                session(['locale' => $language]);
-            }
+            $locale = session('locale', $request->get('lang', config('app.locale')));
+        }
+
+        if ($locale) {
+            App::setLocale($locale);
         }
 
         return $next($request);

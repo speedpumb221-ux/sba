@@ -502,10 +502,7 @@
         }
 
         if (key === 'language') {
-            // Store preference and refresh locale + direction
-            document.documentElement.setAttribute('lang', value);
-            document.documentElement.setAttribute('dir', value === 'ar' ? 'rtl' : 'ltr');
-
+            // For language, send to server first then apply and reload on success
             // Show loading indicator
             const loadingDiv = document.createElement('div');
             loadingDiv.style.cssText = `
@@ -522,11 +519,9 @@
                 font-size: 18px;
                 color: #333;
             `;
+            loadingDiv.id = 'language-loading';
             loadingDiv.innerHTML = 'جاري تحديث اللغة...';
             document.body.appendChild(loadingDiv);
-
-            // Force immediate reload to apply new locale and direction
-            window.location.reload(true);
         }
 
         // Send to server
@@ -544,11 +539,23 @@
         .then(data => {
             if (data.success) {
                 AlertManager.create('تم تحديث الإعداد', 'success', 2000);
+                if (key === 'language') {
+                    // Apply language attributes and reload so server-rendered header/footer update
+                    document.documentElement.setAttribute('lang', value);
+                    document.documentElement.setAttribute('dir', value === 'ar' ? 'rtl' : 'ltr');
+                    // small delay to allow the success toast to show
+                    setTimeout(() => {
+                        // remove loading overlay if exists
+                        const ld = document.getElementById('language-loading'); if (ld) ld.remove();
+                        window.location.reload();
+                    }, 600);
+                }
             }
         })
         .catch(err => {
             console.error('Error updating setting:', err);
             AlertManager.create('حدث خطأ في تحديث الإعداد', 'error', 2000);
+            const ld = document.getElementById('language-loading'); if (ld) ld.remove();
         });
     }
 

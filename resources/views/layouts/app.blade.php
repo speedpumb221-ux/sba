@@ -162,9 +162,7 @@
                 <button id="theme-toggle" class="theme-toggle" title="{{ __('messages.Switch to Dark Mode') }}" aria-label="{{ __('messages.Switch to Dark Mode') }}">
                     🌙
                 </button>
-                <div style="display:inline-block; margin-left:8px;">
-                    <button id="lang-switch" class="theme-toggle" title="{{ app()->getLocale() === 'ar' ? __('messages.Switch to English') : __('messages.Switch to Arabic') }}" aria-label="language switch">{{ app()->getLocale() === 'ar' ? 'EN' : 'ع' }}</button>
-                </div>
+                
                 @auth
                     <a href="{{ route('profile.show') }}" class="theme-toggle" title="الملف الشخصي" aria-label="الملف الشخصي">
                         👤
@@ -271,18 +269,7 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}"></script>
-    <script>
-        (function(){
-            var btn = document.getElementById('lang-switch');
-            if(!btn) return;
-            btn.addEventListener('click', function(){
-                try{
-                    var next = '{{ app()->getLocale() === "ar" ? "en" : "ar" }}';
-                    window.location.href = '/locale/' + next;
-                }catch(e){ console.warn('Language switch failed', e); }
-            });
-        })();
-    </script>
+    
     <script>
     (function(){
         function playAlertSound(type){

@@ -50,6 +50,11 @@ class SettingsController extends Controller
         $settings->fill($data);
         $settings->save();
 
+        // If language was changed, also set it in session so immediate request cycles pick it up
+        if (array_key_exists('language', $data) && in_array($data['language'], ['ar','en'])) {
+            session(['locale' => $data['language']]);
+        }
+
         return response()->json(['success' => true, 'settings' => $settings]);
     }
 }
