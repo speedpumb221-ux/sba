@@ -9,15 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         // Convert numeric confidence_level values to enum strings
-        \Illuminate\Support\Facades\DB::statement("
-            UPDATE speed_bumps
-            SET confidence_level = CASE
-                WHEN CAST(confidence_level AS UNSIGNED) >= 80 THEN 'high'
-                WHEN CAST(confidence_level AS UNSIGNED) >= 60 THEN 'medium'
-                ELSE 'low'
-            END
-            WHERE confidence_level REGEXP '^[0-9]+$'
-        ");
+        $driver = \Illuminate\Support\Facades\DB::getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
+
+        if ($driver === 'pgsql') {
+            // PostgreSQL: use integer cast and POSIX ~ operator for regexp
+            \Illuminate\Support\Facades\DB::statement("\n                UPDATE speed_bumps\n                SET confidence_level = CASE\n                    WHEN CAST(confidence_level AS integer) >= 80 THEN 'high'\n                    WHEN CAST(confidence_level AS integer) >= 60 THEN 'medium'\n                    ELSE 'low'\n                END\n                WHERE confidence_level ~ '^[0-9]+$'\n            ");
+        } else {
+            // MySQL / MariaDB and others: use UNSIGNED cast and REGEXP
+            \Illuminate\Support\Facades\DB::statement("\n                UPDATE speed_bumps\n                SET confidence_level = CASE\n                    WHEN CAST(confidence_level AS UNSIGNED) >= 80 THEN 'high'\n                    WHEN CAST(confidence_level AS UNSIGNED) >= 60 THEN 'medium'\n                    ELSE 'low'\n                END\n                WHERE confidence_level REGEXP '^[0-9]+$'\n            ");
+        }
     }
 
     /**
