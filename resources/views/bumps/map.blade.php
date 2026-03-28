@@ -855,6 +855,34 @@
     }
 
     // Initialize map when page loads
-    document.addEventListener('DOMContentLoaded', initMap);
+    document.addEventListener('DOMContentLoaded', function(){
+        initMap();
+
+        // Ensure Leaflet recalculates sizes after layout adjustments on mobile
+        function ensureMapRendered(delay){
+            try{
+                setTimeout(function(){
+                    if(window.map && typeof window.map.invalidateSize === 'function'){
+                        window.map.invalidateSize(true);
+                        // redraw tile layers
+                        window.map.eachLayer(function(layer){
+                            try{ if(layer instanceof L.TileLayer) layer.redraw(); }catch(e){}
+                        });
+                    }
+                }, delay || 600);
+            }catch(e){ console.warn('ensureMapRendered failed', e); }
+        }
+
+        // Expose for debugging
+        window.ensureMapRendered = ensureMapRendered;
+
+        // Call a couple times to cover transitions and CSS repaint delays
+        ensureMapRendered(600);
+        ensureMapRendered(1200);
+
+        // Recalculate on orientation change / resize so map tiles appear
+        window.addEventListener('orientationchange', function(){ ensureMapRendered(300); });
+        window.addEventListener('resize', function(){ ensureMapRendered(200); });
+    });
 </script>
 @endsection
