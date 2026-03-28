@@ -3,135 +3,414 @@
 @section('title', __('messages.Map'))
 
 @section('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}" />
+<link rel="stylesheet" href="{{ asset('vendor/leaflet-markercluster/MarkerCluster.css') }}" />
+<link rel="stylesheet" href="{{ asset('vendor/leaflet-markercluster/MarkerCluster.Default.css') }}" />
+<link rel="stylesheet" href="{{ asset('css/map-3d.css') }}">
 <style>
-    .leaflet-control-container .leaflet-routing-container-hide {
-        display: none;
+    /* Advanced Leaflet Customizations */
+    .leaflet-control-zoom {
+        border-radius: var(--radius-lg) !important;
+        overflow: hidden;
     }
-    .bump-marker {
-        background-color: #ef4444;
-        border: 2px solid white;
+
+    .leaflet-control-zoom-in {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* Marker Cluster Customization */
+    .marker-cluster {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(30, 64, 175, 0.8)) !important;
+        border: 2px solid rgba(255, 255, 255, 0.9) !important;
+        border-radius: 50% !important;
+        box-shadow: 0 8px 20px rgba(30, 64, 175, 0.3) !important;
+    }
+
+    .marker-cluster span {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(30, 64, 175, 0.9)) !important;
+        border-radius: 50% !important;
+        color: white !important;
+        font-weight: 700 !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .marker-cluster.marker-cluster-small {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.7), rgba(30, 64, 175, 0.7)) !important;
+    }
+
+    .marker-cluster.marker-cluster-medium {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(30, 64, 175, 0.8)) !important;
+    }
+
+    .marker-cluster.marker-cluster-large {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(30, 64, 175, 0.9)) !important;
+    }
+
+    /* Loading Animation */
+    .map-loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-lg);
+    }
+
+    .map-loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(30, 64, 175, 0.2);
+        border-top-color: var(--primary);
         border-radius: 50%;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        animation: spin 1s linear infinite;
     }
-    .bump-marker.verified {
-        background-color: #10b981;
-    }
-    .user-marker {
-        background-color: #3b82f6;
-        border: 3px solid white;
-        border-radius: 50%;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    /* Keep map controls and popups always in light style (map should not follow global dark mode) */
-    .leaflet-container {
-        background: #ffffff;
-        color: #111827;
-    }
-    .leaflet-control-container .leaflet-control {
-        background: #ffffff;
-        color: #111827;
-        border-color: #e5e7eb;
-    }
-    .leaflet-popup-content-wrapper {
-        background: #ffffff;
-        color: #111827;
-        border: 1px solid #e5e7eb;
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
     }
 </style>
 @endsection
 
 @section('content')
-<div style="position: relative; height: calc(100vh - 200px); margin: 0 -16px; margin-bottom: 24px;">
-    <div id="map" style="width: 100%; height: 100%;"></div>
-    
-    <!-- Alert Box -->
-    <div id="alert-box" style="position: absolute; top: 16px; right: 16px; background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 300px; display: none; z-index: 10; direction: rtl;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="margin: 0; color: #ef4444;">⚠️ <span data-i18n="warning.title">{{ __('messages.Warning') }}</span>!</h3>
-            <button onclick="closeAlert()" style="background: none; border: none; font-size: 20px; cursor: pointer;">✕</button>
+<!-- Map Container -->
+<div class="map-container">
+    <div id="map"></div>
+
+    <!-- Loading Indicator -->
+    <div id="map-loading" class="map-loading" style="display: none;">
+        <div class="map-loading-spinner"></div>
+        <p style="color: var(--text-secondary); font-weight: 500;">جاري تحميل الخريطة...</p>
+    </div>
+
+    <!-- Map Controls -->
+    <div class="map-controls">
+        <!-- Alert Distance Control -->
+        <div class="control-card">
+            <div class="control-card-header">
+                <span class="control-card-icon">🔔</span>
+                <span>{{ __('messages.Alert Distance') }}</span>
+            </div>
+            <div class="form-group">
+                <select id="alert-distance" class="form-control">
+                    <option value="50">50 متر</option>
+                    <option value="100" selected>100 متر</option>
+                    <option value="200">200 متر</option>
+                </select>
+            </div>
+            <div class="flex gap-md">
+                <button id="start-tracking" class="btn btn-primary btn-sm" style="flex: 1;">
+                    ▶️ تتبع
+                </button>
+                <button id="stop-tracking" class="btn btn-secondary btn-sm" style="flex: 1;">
+                    ⏹️ إيقاف
+                </button>
+            </div>
         </div>
-        <div id="alert-content"></div>
+
+        <!-- Map Navigation Controls -->
+        <div class="control-card">
+            <div class="control-card-header">
+                <span class="control-card-icon">🎯</span>
+                <span>تحكم الخريطة</span>
+            </div>
+            <div class="flex gap-sm" style="flex-direction: column;">
+                <button id="zoom-to-location" class="btn btn-info btn-sm" title="انتقل إلى موقعك الحالي (L)">
+                    📍 انتقل إلى موقعي
+                </button>
+                <button id="reset-zoom" class="btn btn-warning btn-sm" title="إعادة تعيين التقريب (R)">
+                    🔄 إعادة تعيين التقريب
+                </button>
+                <button id="street-zoom" class="btn btn-success btn-sm" title="تقريب إلى مستوى الشارع (S)">
+                    🏘️ تقريب شارع
+                </button>
+            </div>
+            <small style="color: #666; font-size: 11px; margin-top: 8px; display: block;">
+                اختصارات: L (موقعي), R (إعادة), S (شارع), +/- (تكبير/تصغير)
+            </small>
+        </div>
+
+        <!-- Map Layer Control -->
+        <div class="control-card">
+            <div class="control-card-header">
+                <span class="control-card-icon">🗺️</span>
+                <span>طبقات الخريطة</span>
+            </div>
+            <div class="form-group">
+                <select id="map-layer" class="form-control" onchange="changeMapLayer(this.value)">
+                    <option value="osm">OpenStreetMap</option>
+                    <option value="satellite">صور فضائية</option>
+                    <option value="terrain">تضاريس</option>
+                    <option value="dark">داكن</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Current Location Control -->
+        <div class="control-card">
+            <button id="center-map" class="btn btn-primary btn-block">
+                📍 موقعي الحالي
+            </button>
+        </div>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="alert-box" class="alert-box" style="display: none;">
+        <!-- Alert will be inserted here -->
     </div>
 
     <!-- Stats Box -->
-    <div id="stats-box" style="position: absolute; bottom: 16px; right: 16px; background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 200px; z-index: 10; direction: rtl;">
-        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
-            <strong data-i18n="stats.statistics">{{ __('messages.Statistics') }}</strong>:
+    <div class="stats-box control-card">
+        <div class="control-card-header">
+            <span class="control-card-icon">📊</span>
+            <span>الإحصائيات</span>
         </div>
-        <div style="font-size: 12px; margin-bottom: 4px;">
-            📍 <span data-i18n="stats.speed_bumps">{{ __('messages.Speed Bumps') }}</span>: <span id="total-bumps">0</span>
+        <div class="stats-item">
+            <span>📍</span>
+            <span>المطبات:</span>
+            <span class="stats-value" id="total-bumps">0</span>
         </div>
-        <div style="font-size: 12px; margin-bottom: 4px;">
-            ✅ <span data-i18n="stats.verified">{{ __('messages.Verified') }}</span>: <span id="verified-bumps">0</span>
+        <div class="stats-item">
+            <span>✅</span>
+            <span>مؤكدة:</span>
+            <span class="stats-value" id="verified-bumps">0</span>
         </div>
-        <div style="font-size: 12px;">
-            📊 <span data-i18n="stats.alerts">{{ __('messages.Alerts') }}</span>: <span id="alert-count">0</span>
-        </div>
-    </div>
-</div>
-
-<!-- Controls -->
-<div class="card">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
-        <div>
-            <label for="alert-distance" style="font-size: 12px; color: var(--text-secondary);" data-i18n="label.alert_distance">{{ __('messages.Alert Distance') }}</label>
-            <select id="alert-distance" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;">
-                <option value="50">50 <span data-i18n="label.meters">{{ __('messages.meters') }}</span></option>
-                <option value="100" selected>100 <span data-i18n="label.meters">{{ __('messages.meters') }}</span></option>
-                <option value="200">200 <span data-i18n="label.meters">{{ __('messages.meters') }}</span></option>
-            </select>
-        </div>
-        <div style="display: flex; gap: 8px; align-items: flex-end;">
-            <button id="start-tracking" class="btn btn-primary" style="flex: 1;" data-i18n="action.start_tracking">▶️ {{ __('messages.Start Tracking') }}</button>
-            <button id="stop-tracking" class="btn btn-secondary" style="flex: 1;" data-i18n="action.stop">⏹️ {{ __('messages.Stop') }}</button>
+        <div class="stats-item">
+            <span>❓</span>
+            <span>غير مؤكدة:</span>
+            <span class="stats-value" id="unverified-bumps">0</span>
         </div>
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<!-- Scripts -->
+<script src="{{ asset('vendor/leaflet/leaflet.js') }}"></script>
+<script src="{{ asset('vendor/leaflet-markercluster/leaflet.markercluster.js') }}"></script>
+
 <script>
+    // ============================================
+    // Map Variables
+    // ============================================
     let map;
     let userMarker;
     let bumpMarkers = [];
+    let markerClusterGroup;
     let watchId;
     let isTracking = false;
     let alertDistance = 100;
-    let userLocation = [24.7136, 46.6753]; // Riyadh default [lat, lng]
+    let userLocation = [24.7136, 46.6753]; // Riyadh default
     let lastAlertTime = 0;
-    const ALERT_COOLDOWN = 3000; // 3 seconds
-
-    // Initialize Map
-    function initMap() {
-        map = L.map('map').setView(userLocation, 13);
-
-        // Always use the standard OpenStreetMap light tiles for consistency
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const ALERT_COOLDOWN = 3000;
+    
+    // Map layers
+    const mapLayers = {
+        osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19,
-        }).addTo(map);
+        }),
+        satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles © Esri',
+            maxZoom: 19,
+        }),
+        terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap',
+            maxZoom: 17,
+        }),
+        dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors © CARTO',
+            maxZoom: 19,
+        })
+    };
 
-        // Load bumps from server
+    let currentLayer = 'osm';
+
+    /**
+     * Initialize Map
+     */
+    function initMap() {
+        // Show loading indicator
+        document.getElementById('map-loading').style.display = 'flex';
+
+        // Create map
+        map = L.map('map', {
+            zoomControl: true,
+            attributionControl: true,
+            preferCanvas: true,
+            maxBounds: [[-85.051129, -180], [85.051129, 180]],
+        }).setView(userLocation, 13);
+
+        // Add initial tile layer
+        mapLayers.osm.addTo(map);
+
+        // Initialize marker cluster group
+        markerClusterGroup = L.markerClusterGroup({
+            maxClusterRadius: 80,
+            disableClusteringAtZoom: 17,
+            iconCreateFunction: createClusterIcon
+        });
+        map.addLayer(markerClusterGroup);
+
+        // Load bumps
         loadBumps();
 
         // Start GPS tracking
         startGPSTracking();
 
-        // Update stats
-        updateStats();
+        // Setup event listeners
+        setupEventListeners();
 
         // Add click event to add new bumps
         map.on('click', function(e) {
-            if (confirm('{{ __("messages.Add a bump") }} هنا؟')) {
+            if (confirm('هل تريد إضافة مطب هنا؟')) {
                 addNewBump(e.latlng.lat, e.latlng.lng);
             }
         });
+
+        // Hide loading indicator
+        setTimeout(() => {
+            document.getElementById('map-loading').style.display = 'none';
+        }, 500);
     }
 
-    // Load bumps from API
+    /**
+     * Create Cluster Icon
+     */
+    function createClusterIcon(cluster) {
+        const childCount = cluster.getChildCount();
+        let c = ' marker-cluster-';
+        if (childCount < 10) {
+            c += 'small';
+        } else if (childCount < 100) {
+            c += 'medium';
+        } else {
+            c += 'large';
+        }
+
+        return new L.DivIcon({
+            html: `<div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(30, 64, 175, 0.9)); border: 2px solid rgba(255, 255, 255, 0.9); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; box-shadow: 0 8px 20px rgba(30, 64, 175, 0.3);">${childCount}</div>`,
+            className: 'marker-cluster' + c,
+            iconSize: new L.Point(40, 40),
+            iconAnchor: [20, 20]
+        });
+    }
+
+    /**
+     * Change Map Layer
+     */
+    function changeMapLayer(layer) {
+        if (currentLayer !== layer) {
+            map.removeLayer(mapLayers[currentLayer]);
+            mapLayers[layer].addTo(map);
+            currentLayer = layer;
+        }
+    }
+
+    /**
+     * Setup Event Listeners
+     */
+    function setupEventListeners() {
+        document.getElementById('alert-distance').addEventListener('change', (e) => {
+            alertDistance = parseInt(e.target.value);
+        });
+
+        document.getElementById('start-tracking').addEventListener('click', (e) => {
+            isTracking = true;
+            // Visual feedback
+            try{ e.target.classList.add('btn-pressed'); setTimeout(()=>e.target.classList.remove('btn-pressed'), 300); }catch(err){}
+            try{ AlertManager.create('تم بدء التتبع', 'success', 2000); }catch(err){ console.warn('AlertManager missing', err); }
+        });
+
+        document.getElementById('stop-tracking').addEventListener('click', (e) => {
+            isTracking = false;
+            try{ e.target.classList.add('btn-pressed'); setTimeout(()=>e.target.classList.remove('btn-pressed'), 300); }catch(err){}
+            try{ AlertManager.create('تم إيقاف التتبع', 'info', 2000); }catch(err){ console.warn('AlertManager missing', err); }
+        });
+
+        document.getElementById('center-map').addEventListener('click', () => {
+            if (userMarker) {
+                map.setView(userLocation, 16);
+            }
+        });
+
+        // New map control buttons
+        document.getElementById('zoom-to-location')?.addEventListener('click', () => {
+            if (userLocation) {
+                map.setView(userLocation, 18);
+            } else {
+                AlertManager.create('الموقع غير متاح حاليًا', 'warning', 3000);
+            }
+        });
+
+        document.getElementById('reset-zoom')?.addEventListener('click', () => {
+            map.setView(userLocation, 13);
+        });
+
+        document.getElementById('street-zoom')?.addEventListener('click', () => {
+            if (userLocation) {
+                map.setView(userLocation, 20);
+            } else {
+                AlertManager.create('الموقع غير متاح حاليًا', 'warning', 3000);
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            switch(e.key.toLowerCase()) {
+                case 'l':
+                    if (userLocation) {
+                        map.setView(userLocation, 18);
+                    }
+                    break;
+                case 'r':
+                    map.setView(userLocation, 13);
+                    break;
+                case 's':
+                    if (userLocation) {
+                        map.setView(userLocation, 20);
+                    }
+                    break;
+                case '+':
+                case '=':
+                    map.zoomIn();
+                    break;
+                case '-':
+                    map.zoomOut();
+                    break;
+            }
+        });
+        // Diagnostics: warn if start/stop controls not found
+        try{
+            var startBtn = document.getElementById('start-tracking');
+            var stopBtn = document.getElementById('stop-tracking');
+            if(!startBtn) console.warn('start-tracking button not found');
+            if(!stopBtn) console.warn('stop-tracking button not found');
+        }catch(e){ console.warn('setupEventListeners diagnostics failed', e); }
+    }
+
+    // Delegated click handler as a fallback if direct listeners don't attach
+    document.addEventListener('click', function(e){
+        try{
+            var btn = e.target.closest && e.target.closest('#start-tracking, #stop-tracking');
+            if(!btn) return;
+            if(btn.id === 'start-tracking'){
+                isTracking = true;
+                try{ AlertManager.create('تم بدء التتبع', 'success', 2000); }catch(e){ console.warn('AlertManager missing', e); }
+            } else if(btn.id === 'stop-tracking'){
+                isTracking = false;
+                try{ AlertManager.create('تم إيقاف التتبع', 'info', 2000); }catch(e){ console.warn('AlertManager missing', e); }
+            }
+        }catch(e){ /* ignore */ }
+    });
+
+    /**
+     * Load Bumps from API
+     */
     function loadBumps() {
         fetch('/api/bumps', {
             headers: {
@@ -142,8 +421,7 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Clear existing markers
-                bumpMarkers.forEach(marker => map.removeLayer(marker));
+                markerClusterGroup.clearLayers();
                 bumpMarkers = [];
 
                 data.bumps.forEach(bump => {
@@ -156,43 +434,85 @@
         .catch(error => console.error('Error loading bumps:', error));
     }
 
-    // Add bump marker to map
+    /**
+     * Add Bump Marker to Map
+     */
     function addBumpMarker(bump) {
         const iconHtml = bump.is_verified ? '📍' : '❓';
         const markerColor = bump.is_verified ? '#10b981' : '#ef4444';
 
         const icon = L.divIcon({
-            html: `<div style="background-color: ${markerColor}; border: 2px solid white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${iconHtml}</div>`,
-            className: 'bump-marker',
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
+            html: `<div style="background: linear-gradient(135deg, ${markerColor}, ${markerColor}); border: 2px solid white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.3), inset 0 -2px 4px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.3); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25));">${iconHtml}</div>`,
+            className: 'bump-marker' + (bump.is_verified ? ' verified' : ''),
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
         });
 
         const marker = L.marker([parseFloat(bump.latitude), parseFloat(bump.longitude)], { icon })
-            .addTo(map)
-            .bindPopup(`
-                <div style="direction: rtl; text-align: right; padding: 8px;">
-                    <h4 style="margin: 0 0 8px 0;">مطب سرعة</h4>
-                    <p style="margin: 4px 0;"><strong>الحالة:</strong> ${bump.is_verified ? 'مؤكد' : 'غير مؤكد'}</p>
-                    <p style="margin: 4px 0;"><strong>التقارير:</strong> ${bump.reports_count || 0}</p>
-                    ${bump.description ? `<p style="margin: 4px 0;"><strong>الوصف:</strong> ${bump.description}</p>` : ''}
-                    <div style="margin-top: 8px;">
-                        <button onclick="reportBump(${bump.id}, 'confirm')" class="btn btn-success" style="font-size: 12px; padding: 4px 8px;">تأكيد</button>
-                        <button onclick="reportBump(${bump.id}, 'false_positive')" class="btn btn-danger" style="font-size: 12px; padding: 4px 8px; margin-left: 4px;">خطأ</button>
-                    </div>
-                </div>
-            `);
+            .bindPopup(createBumpPopup(bump), {
+                maxWidth: 300,
+                className: 'bump-popup-container'
+            });
 
+        markerClusterGroup.addLayer(marker);
         bumpMarkers.push(marker);
     }
 
-    // Add new bump
+    /**
+     * Create Bump Popup HTML
+     */
+    function createBumpPopup(bump) {
+        const statusBadge = bump.is_verified 
+            ? '<span class="badge badge-success">مؤكد</span>' 
+            : '<span class="badge badge-warning">غير مؤكد</span>';
+
+        return `
+            <div class="bump-popup">
+                <div class="bump-popup-header">
+                    <span class="bump-popup-icon">${bump.is_verified ? '📍' : '❓'}</span>
+                    <span>مطب سرعة</span>
+                </div>
+                
+                <div class="bump-popup-info">
+                    <div class="bump-popup-row">
+                        <span class="bump-popup-label">الحالة:</span>
+                        <span>${statusBadge}</span>
+                    </div>
+                    <div class="bump-popup-row">
+                        <span class="bump-popup-label">التقارير:</span>
+                        <span class="bump-popup-value">${bump.reports_count || 0}</span>
+                    </div>
+                    ${bump.description ? `
+                        <div class="bump-popup-row">
+                            <span class="bump-popup-label">الوصف:</span>
+                            <span class="bump-popup-value">${bump.description}</span>
+                        </div>
+                    ` : ''}
+                    <div class="bump-popup-row">
+                        <span class="bump-popup-label">الموقع:</span>
+                        <span class="bump-popup-value">${parseFloat(bump.latitude).toFixed(4)}, ${parseFloat(bump.longitude).toFixed(4)}</span>
+                    </div>
+                </div>
+                
+                <div class="bump-popup-actions">
+                    <button onclick="reportBump(${bump.id}, 'confirm')" class="btn btn-success btn-sm">✓ تأكيد</button>
+                    <button onclick="reportBump(${bump.id}, 'false_positive')" class="btn btn-danger btn-sm">✕ خطأ</button>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Add New Bump
+     */
     function addNewBump(lat, lng) {
         fetch('/api/bumps', {
             method: 'POST',
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             credentials: 'same-origin',
             body: JSON.stringify({
@@ -201,23 +521,52 @@
                 description: 'مطب جديد'
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                loadBumps(); // Reload all bumps
-                alert('{{ __("messages.Success") }}: {{ __("messages.Speed bump added successfully") }}');
+        .then(function(response){
+            if(!response.ok){
+                // common cases: 401/302 = not authenticated, 419 = CSRF
+                if(response.status === 419 || response.status === 401 || response.status === 302){
+                    throw new Error('Authentication or CSRF error (status ' + response.status + '). تأكد من تسجيل الدخول أو إعادة تحميل الصفحة.');
+                }
+                // attempt to read body for debugging (could be HTML error page or JSON with message)
+                return response.text().then(function(text){
+                    var snippet = (text || '').slice(0,1000);
+                    throw new Error('HTTP ' + response.status + ' - ' + snippet);
+                });
+            }
+            var ct = (response.headers.get('content-type') || '');
+            if(!ct.includes('application/json')){
+                return response.text().then(function(text){ throw new Error('Non-JSON response: ' + (text||'').slice(0,1000)); });
+            }
+            return response.json();
+        })
+        .then(function(data){
+            if (data && data.success) {
+                loadBumps();
+                AlertManager.create('تم إضافة المطب بنجاح', 'success', 2000);
+            } else {
+                console.warn('addNewBump: unexpected response', data);
             }
         })
-        .catch(error => console.error('Error adding bump:', error));
+        .catch(function(error){
+            console.error('Error adding bump:', error);
+            // show a helpful message to the user
+            var msg = 'فشل إضافة المطب';
+            if(error && error.message) msg += ': ' + (error.message.length>200? error.message.slice(0,200)+'...': error.message);
+            AlertManager.create(msg, 'error', 4000);
+        });
     }
 
-    // Report bump
+    /**
+     * Report Bump
+     */
     function reportBump(bumpId, type) {
         fetch('/api/reports', {
             method: 'POST',
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             credentials: 'same-origin',
             body: JSON.stringify({
@@ -228,14 +577,19 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                loadBumps(); // Reload bumps to update status
-                alert('{{ __("messages.Success") }}: {{ __("messages.Report submitted") }}');
+                loadBumps();
+                AlertManager.create('تم إرسال التقرير بنجاح', 'success', 2000);
             }
         })
-        .catch(error => console.error('Error reporting bump:', error));
+        .catch(error => {
+            console.error('Error reporting bump:', error);
+            AlertManager.create('حدث خطأ في إرسال التقرير', 'error', 2000);
+        });
     }
 
-    // GPS Tracking
+    /**
+     * Start GPS Tracking
+     */
     function startGPSTracking() {
         if (navigator.geolocation) {
             watchId = navigator.geolocation.watchPosition(
@@ -248,20 +602,20 @@
                     }
 
                     const userIcon = L.divIcon({
-                        html: '<div style="background-color: #3b82f6; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>',
+                        html: '<div style="background: linear-gradient(135deg, #3b82f6, #1e40af); border: 3px solid white; border-radius: 50%; width: 24px; height: 24px; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 -2px 4px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(255, 255, 255, 0.4);"></div>',
                         className: 'user-marker',
-                        iconSize: [20, 20],
-                        iconAnchor: [10, 10]
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
                     });
 
                     userMarker = L.marker(userLocation, { icon: userIcon })
                         .addTo(map)
-                        .bindPopup('{{ __("messages.Your location") }}');
+                        .bindPopup('📍 موقعك الحالي');
 
                     // Check for nearby bumps
                     checkNearbyBumps();
 
-                    // Center map on user if tracking is active
+                    // Center map if tracking
                     if (isTracking) {
                         map.setView(userLocation, 16);
                     }
@@ -278,88 +632,75 @@
         }
     }
 
-    // Check for nearby bumps and show alerts
+    /**
+     * Check Nearby Bumps
+     */
     function checkNearbyBumps() {
         const now = Date.now();
         if (now - lastAlertTime < ALERT_COOLDOWN) return;
 
         bumpMarkers.forEach(marker => {
-            const bumpLatLng = marker.getLatLng();
-            const distance = map.distance(userLocation, [bumpLatLng.lat, bumpLatLng.lng]);
+            const markerLat = marker.getLatLng().lat;
+            const markerLng = marker.getLatLng().lng;
+            const distance = calculateDistance(userLocation[0], userLocation[1], markerLat, markerLng);
 
-            if (distance <= alertDistance) {
-                showAlert('{{ __("messages.Warning") }}: {{ __("messages.Speed bump ahead") }}! (' + Math.round(distance) + ' {{ __("messages.meters") }})');
+            if (distance < alertDistance) {
                 lastAlertTime = now;
-                updateAlertCount();
+                showNearbyAlert(distance);
             }
         });
     }
 
-    // Show alert
-    function showAlert(message) {
-        document.getElementById('alert-content').innerHTML = message;
-        document.getElementById('alert-box').style.display = 'block';
+    /**
+     * Calculate Distance (Haversine Formula)
+     */
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c * 1000;
+    }
 
-        // Auto hide after 5 seconds
+    /**
+     * Show Nearby Alert
+     */
+    function showNearbyAlert(distance) {
+        const alertBox = document.getElementById('alert-box');
+        alertBox.innerHTML = `
+            <div class="alert alert-warning">
+                <span class="alert-icon">⚠️</span>
+                <div class="alert-content">
+                    <div class="alert-title">تنبيه!</div>
+                    <div>مطب سرعة على بعد ${Math.round(distance)} متر</div>
+                </div>
+            </div>
+        `;
+        alertBox.style.display = 'block';
+
         setTimeout(() => {
-            closeAlert();
+            alertBox.style.display = 'none';
         }, 5000);
     }
 
-    // Close alert
-    function closeAlert() {
-        document.getElementById('alert-box').style.display = 'none';
-    }
-
-    // Update statistics
+    /**
+     * Update Statistics
+     */
     function updateStats() {
-        fetch('/api/stats', {
-            headers: {
-                'Accept': 'application/json'
-            },
-            credentials: 'same-origin'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('total-bumps').textContent = data.stats.total_bumps || 0;
-                document.getElementById('verified-bumps').textContent = data.stats.verified_bumps || 0;
-                document.getElementById('alert-count').textContent = data.stats.alert_count || 0;
-            }
-        })
-        .catch(error => console.error('Error loading stats:', error));
+        const totalBumps = bumpMarkers.length;
+        const verifiedBumps = bumpMarkers.filter(m => {
+            return m.getPopup().getContent().includes('مؤكد');
+        }).length;
+
+        document.getElementById('total-bumps').textContent = totalBumps;
+        document.getElementById('verified-bumps').textContent = verifiedBumps;
+        document.getElementById('unverified-bumps').textContent = totalBumps - verifiedBumps;
     }
-
-    // Update alert count
-    function updateAlertCount() {
-        const current = parseInt(document.getElementById('alert-count').textContent) || 0;
-        document.getElementById('alert-count').textContent = current + 1;
-    }
-
-    // Event listeners
-    document.getElementById('start-tracking').addEventListener('click', function() {
-        isTracking = true;
-        this.disabled = true;
-        document.getElementById('stop-tracking').disabled = false;
-        if (userLocation) {
-            map.setView(userLocation, 16);
-        }
-    });
-
-    document.getElementById('stop-tracking').addEventListener('click', function() {
-        isTracking = false;
-        this.disabled = true;
-        document.getElementById('start-tracking').disabled = false;
-    });
-
-    document.getElementById('alert-distance').addEventListener('change', function() {
-        alertDistance = parseInt(this.value);
-    });
 
     // Initialize map when page loads
     document.addEventListener('DOMContentLoaded', initMap);
-
-    // Refresh bumps every 30 seconds
-    setInterval(loadBumps, 30000);
 </script>
 @endsection

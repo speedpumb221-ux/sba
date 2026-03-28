@@ -79,13 +79,43 @@ class SpeedBumpMap {
     }
 
     init() {
-        this.map = L.map('map').setView(this.userLocation, 13);
+        this.map = L.map('map', {
+            center: this.userLocation,
+            zoom: 13,
+            zoomControl: true,
+            doubleClickZoom: true,
+            scrollWheelZoom: 'center', // Zoom to center on scroll
+            touchZoom: true,
+            keyboard: true,
+            keyboardPanDelta: 80,
+            zoomAnimation: true,
+            fadeAnimation: true,
+            markerZoomAnimation: true,
+            inertia: true,
+            inertiaDeceleration: 3000,
+            inertiaMaxSpeed: 1500
+        });
 
-        // Add OpenStreetMap tiles
+        // Add OpenStreetMap tiles with higher maxZoom for street-level view
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
-            maxZoom: 19,
+            maxZoom: 20, // Increased for street-level zoom
+            minZoom: 3
         }).addTo(this.map);
+
+        // Add scale control
+        L.control.scale({
+            position: 'bottomleft',
+            metric: true,
+            imperial: false
+        }).addTo(this.map);
+
+        // Add fullscreen control if available
+        if (L.control.fullscreen) {
+            L.control.fullscreen({
+                position: 'topright'
+            }).addTo(this.map);
+        }
 
         // Create a marker cluster group for performance with many markers
         this.clusterGroup = L.markerClusterGroup({
@@ -105,10 +135,85 @@ class SpeedBumpMap {
         // Update stats
         this.updateStats();
 
-        // Add click event to add new bumps
+        // Add precise click-to-add-bump with marker preview and confirmation
         this.map.on('click', (e) => {
-            if (confirm('{{ __("messages.Add a bump") }} هنا؟')) {
-                this.addNewBump(e.latlng.lat, e.latlng.lng);
+            // Remove any previous preview marker
+            if (this._previewMarker) {
+                this.map.removeLayer(this._previewMarker);
+            }
+            const lat = parseFloat(e.latlng.lat);
+            const lng = parseFloat(e.latlng.lng);
+            this._previewMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    html: '<div style="background:#22d3ee;border:2px dashed #0ea5e9;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:18px;">➕</div>',
+                    className: 'bump-preview-marker',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                })
+            }).addTo(this.map);
+            this._previewMarker.bindPopup(
+                `<div style='direction:rtl;text-align:right;'>
+                    <b>إضافة مطب جديد هنا؟</b><br>
+                    <span style='font-size:12px;'>الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}</span><br>
+                    <button id='confirm-add-bump' style='margin-top:8px;' class='btn btn-primary btn-sm'>تأكيد</button>
+                    <button id='cancel-add-bump' style='margin-top:8px;margin-right:4px;' class='btn btn-secondary btn-sm'>إلغاء</button>
+                </div>`
+            ).openPopup();
+            setTimeout(() => {
+                const confirmBtn = document.getElementById('confirm-add-bump');
+                const cancelBtn = document.getElementById('cancel-add-bump');
+                if (confirmBtn) {
+                    confirmBtn.onclick = () => {
+                        this.addNewBump(lat, lng);
+                        this.map.removeLayer(this._previewMarker);
+                        this._previewMarker = null;
+                    };
+                }
+                if (cancelBtn) {
+                    cancelBtn.onclick = () => {
+                        this.map.removeLayer(this._previewMarker);
+                        this._previewMarker = null;
+                    };
+                }
+            }, 100);
+        });
+
+        // Add double-click zoom for mobile devices
+        this.map.on('dblclick', (e) => {
+            this.map.zoomIn();
+        });
+
+        // Add touch gesture for zoom on mobile
+        let touchStartDistance = 0;
+        this.map.on('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                touchStartDistance = Math.sqrt(
+                    Math.pow(touch2.clientX - touch1.clientX, 2) +
+                    Math.pow(touch2.clientY - touch1.clientY, 2)
+                );
+            }
+        });
+
+        this.map.on('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = Math.sqrt(
+                    Math.pow(touch2.clientX - touch1.clientX, 2) +
+                    Math.pow(touch2.clientY - touch1.clientY, 2)
+                );
+                if (touchStartDistance > 0) {
+                    const scale = currentDistance / touchStartDistance;
+                    if (scale > 1.2) {
+                        this.map.zoomIn();
+                        touchStartDistance = currentDistance;
+                    } else if (scale < 0.8) {
+                        this.map.zoomOut();
+                        touchStartDistance = currentDistance;
+                    }
+                }
             }
         });
 
@@ -137,6 +242,55 @@ class SpeedBumpMap {
 
         document.getElementById('alert-distance').addEventListener('change', (e) => {
             this.alertDistance = parseInt(e.target.value);
+        });
+
+        // Map navigation controls
+        document.getElementById('zoom-to-location')?.addEventListener('click', () => {
+            if (this.userLocation) {
+                this.map.setView(this.userLocation, 18); // High zoom to location
+            } else {
+                alert('الموقع غير متاح حاليًا');
+            }
+        });
+
+        document.getElementById('reset-zoom')?.addEventListener('click', () => {
+            this.map.setView(this.userLocation, 13); // Reset to initial zoom
+        });
+
+        document.getElementById('street-zoom')?.addEventListener('click', () => {
+            if (this.userLocation) {
+                this.map.setView(this.userLocation, 20); // Maximum zoom for street level
+            } else {
+                alert('الموقع غير متاح حاليًا');
+            }
+        });
+
+        // Keyboard shortcuts for map control
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return; // Don't interfere with form inputs
+
+            switch(e.key.toLowerCase()) {
+                case 'l':
+                    if (this.userLocation) {
+                        this.map.setView(this.userLocation, 18);
+                    }
+                    break;
+                case 'r':
+                    this.map.setView(this.userLocation, 13);
+                    break;
+                case 's':
+                    if (this.userLocation) {
+                        this.map.setView(this.userLocation, 20);
+                    }
+                    break;
+                case '+':
+                case '=':
+                    this.map.zoomIn();
+                    break;
+                case '-':
+                    this.map.zoomOut();
+                    break;
+            }
         });
     }
 
@@ -227,12 +381,16 @@ class SpeedBumpMap {
             iconAnchor: [12, 12]
         });
 
-        const marker = L.marker([parseFloat(bump.latitude), parseFloat(bump.longitude)], { icon })
+        // Ensure latitude/longitude are numbers for Leaflet and toFixed
+        const lat = parseFloat(bump.latitude);
+        const lng = parseFloat(bump.longitude);
+        const marker = L.marker([lat, lng], { icon })
             .bindPopup(`
                 <div style="direction: rtl; text-align: right; padding: 8px;">
                     <h4 style="margin: 0 0 8px 0;">مطب سرعة</h4>
                     <p style="margin: 4px 0;"><strong>المصدر:</strong> ${bump.source || 'unknown'}</p>
                     <p style="margin: 4px 0;"><strong>الثقة:</strong> ${bump.confidence || 'N/A'}</p>
+                    <p style="margin: 4px 0;"><strong>الإحداثيات:</strong> ${!isNaN(lat) && !isNaN(lng) ? lat.toFixed(6) + ', ' + lng.toFixed(6) : 'N/A'}</p>
                     <p style="margin: 4px 0;"><strong>تاريخ الإنشاء:</strong> ${bump.created_at || '—'}</p>
                     <p style="margin: 4px 0;"><strong>التقارير:</strong> ${bump.reports_count || 0}</p>
                     ${bump.description ? `<p style="margin: 4px 0;"><strong>الوصف:</strong> ${bump.description}</p>` : ''}
@@ -350,6 +508,15 @@ class SpeedBumpMap {
                 },
                 (error) => {
                     console.error('GPS Error:', error);
+                    let message = 'حدث خطأ في تحديد الموقع.';
+                    if (error.code === 1) {
+                        message = 'تم رفض الوصول إلى الموقع. يرجى السماح بالوصول لتحديد موقعك.';
+                    } else if (error.code === 2) {
+                        message = 'لا يمكن تحديد الموقع حاليًا.';
+                    } else if (error.code === 3) {
+                        message = 'انتهت مهلة تحديد الموقع.';
+                    }
+                    alert(message);
                 },
                 {
                     enableHighAccuracy: true,

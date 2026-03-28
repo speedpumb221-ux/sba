@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('road_events', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->decimal('latitude', 10, 8);
-            $table->decimal('longitude', 11, 8);
-            $table->decimal('speed', 8, 2)->nullable();
-            $table->decimal('vibration', 8, 4)->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable('road_events')) {
+            Schema::create('road_events', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+                $table->decimal('latitude', 10, 8);
+                $table->decimal('longitude', 11, 8);
+                $table->decimal('speed', 8, 2)->nullable();
+                $table->decimal('vibration', 8, 4)->nullable();
+                $table->timestamps();
 
-            $table->index('user_id');
-            $table->index(['latitude', 'longitude']);
-            $table->index('created_at');
-        });
+                $table->index('user_id');
+                $table->index(['latitude', 'longitude']);
+                $table->index('created_at');
+            });
+        }
     }
 
     /**

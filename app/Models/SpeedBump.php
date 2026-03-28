@@ -46,19 +46,30 @@ class SpeedBump extends Model
 
     public function incrementConfidence()
     {
-        $this->increment('confidence', 5);
         $this->increment('reports_count');
-        
-        if ($this->confidence >= 80) {
+        // For enum confidence_level, promote based on current level
+        $currentLevel = $this->confidence_level ?? 'medium';
+        $levelOrder = ['low' => 1, 'medium' => 2, 'high' => 3];
+
+        if ($currentLevel === 'low' || $currentLevel === 'medium') {
+            $this->update(['confidence_level' => 'high']);
+        }
+
+        if ($this->confidence_level === 'high') {
             $this->update(['is_verified' => true]);
         }
     }
 
     public function decrementConfidence()
     {
-        $this->decrement('confidence', 10);
-        
-        if ($this->confidence <= 20) {
+        // For enum confidence_level, demote based on current level
+        $currentLevel = $this->confidence_level ?? 'medium';
+
+        if ($currentLevel === 'high') {
+            $this->update(['confidence_level' => 'medium']);
+        } elseif ($currentLevel === 'medium') {
+            $this->update(['confidence_level' => 'low']);
+        } elseif ($currentLevel === 'low') {
             $this->delete();
         }
     }
@@ -102,7 +113,7 @@ class SpeedBump extends Model
 
     public function scopeHighConfidence($query)
     {
-        return $query->where('confidence_level', '>=', 70);
+        return $query->where('confidence_level', 'high');
     }
 
     public function scopeNearLocation($query, $latitude, $longitude, $radius = 1000)

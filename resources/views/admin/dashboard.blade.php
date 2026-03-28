@@ -5,7 +5,46 @@
 @section('content')
 <h2 style="margin-bottom: 24px;">لوحة الإدارة</h2>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px;">
+<!-- Navigation Buttons -->
+<div class="admin-nav-grid" style="margin-bottom: 32px;">
+    <a href="{{ route('admin.dashboard') }}" class="admin-nav-card active">
+        <div class="admin-nav-icon">📊</div>
+        <div class="admin-nav-title">لوحة التحكم</div>
+        <div class="admin-nav-desc">نظرة عامة على النظام</div>
+    </a>
+
+    <a href="{{ route('admin.bumps') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">📍</div>
+        <div class="admin-nav-title">إدارة المطبات</div>
+        <div class="admin-nav-desc">مراجعة وإدارة المطبات</div>
+    </a>
+
+    <a href="{{ route('admin.users') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">👥</div>
+        <div class="admin-nav-title">إدارة المستخدمين</div>
+        <div class="admin-nav-desc">إدارة حسابات المستخدمين</div>
+    </a>
+
+    <a href="{{ route('admin.reports') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">📋</div>
+        <div class="admin-nav-title">التقارير</div>
+        <div class="admin-nav-desc">عرض وإدارة التقارير</div>
+    </a>
+
+    <a href="{{ route('admin.predictions') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">🧠</div>
+        <div class="admin-nav-title">التوقعات</div>
+        <div class="admin-nav-desc">إدارة التنبؤات الذكية</div>
+    </a>
+
+    <a href="{{ route('admin.testing') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">🧪</div>
+        <div class="admin-nav-title">اختبار النظام</div>
+        <div class="admin-nav-desc">محاكاة التنبيهات والإشعارات</div>
+    </a>
+</div>
+
+<div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px;">
     <div class="card">
         <div style="font-size: 32px; margin-bottom: 8px;">👥</div>
         <div style="font-size: 12px; color: var(--text-secondary);">إجمالي المستخدمين</div>
@@ -52,7 +91,15 @@
                 <div style="padding: 12px; background: var(--bg-secondary); border-radius: 6px;">
                     <div style="font-weight: 500;">{{ $bump->description ?? 'مطب' }}</div>
                     <div style="font-size: 12px; color: var(--text-secondary);">
-                        المصدر: {{ $bump->source }} | الثقة: {{ $bump->confidence_level }}%
+                        @php
+                            $confidencePercent = match($bump->confidence_level ?? 'medium') {
+                                'high' => 90,
+                                'medium' => 65,
+                                'low' => 35,
+                                default => 50
+                            };
+                        @endphp
+                        المصدر: {{ $bump->source }} | الثقة: {{ $confidencePercent }}%
                     </div>
                     <div style="margin-top: 8px; display: flex; gap: 8px;">
                         @if(!$bump->is_verified)

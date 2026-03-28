@@ -34,6 +34,8 @@ Route::middleware('auth')->group(function () {
 
     // Speed Bumps
     Route::get('/bumps', [SpeedBumpController::class, 'index'])->name('bumps.index');
+    Route::get('/bumps/create', [SpeedBumpController::class, 'create'])->name('bumps.create');
+    Route::post('/bumps', [SpeedBumpController::class, 'store'])->name('bumps.store');
     Route::get('/map', [SpeedBumpController::class, 'map'])->name('bumps.map');
 
     // Profile
@@ -48,6 +50,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/bumps', [AdminController::class, 'bumps'])->name('bumps');
         Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
         Route::get('/predictions', [AdminController::class, 'predictions'])->name('predictions');
+        Route::get('/testing', [AdminController::class, 'testing'])->name('testing');
         Route::post('/bumps/{bump}/approve', [AdminController::class, 'approveBump'])->name('bumps.approve');
         Route::post('/bumps/{bump}/reject', [AdminController::class, 'rejectBump'])->name('bumps.reject');
         Route::post('/predictions/{prediction}/convert', [AdminController::class, 'convertPrediction'])->name('predictions.convert');

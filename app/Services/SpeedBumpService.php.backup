@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\SpeedBump;
-use App\Events\SpeedBumpDetected;
-use Illuminate\Support\Facades\Event;
 
 class SpeedBumpService
 {
@@ -72,7 +70,7 @@ class SpeedBumpService
             'latitude' => $latitude,
             'longitude' => $longitude,
             'source' => $attributes['source'] ?? 'user',
-            // Use enum values for confidence_level - use provided value or default to medium
+            // Use enum values for confidence_level
             'confidence_level' => $attributes['confidence_level'] ?? 'medium',
             'reports_count' => $attributes['reports_count'] ?? 1,
             'is_verified' => $attributes['is_verified'] ?? false,
@@ -83,17 +81,7 @@ class SpeedBumpService
 
         $createData = array_merge($defaultAttributes, $attributes);
 
-        $new = SpeedBump::create($createData);
-
-        // Broadcast newly created bump for realtime alerts
-        try {
-            event(new SpeedBumpDetected($new));
-        } catch (\Exception $e) {
-            // non-fatal — broadcasting may not be configured in all environments
-            \Log::debug('SpeedBumpDetected broadcast failed: ' . $e->getMessage());
-        }
-
-        return $new;
+        return SpeedBump::create($createData);
     }
 
     /**
@@ -148,4 +136,3 @@ class SpeedBumpService
         if ($num >= 60) return 'medium';
         return 'low';
     }
-}

@@ -1,0 +1,525 @@
+/* ============================================
+   تطبيق حواجز السرعة - Responsive Design
+   Mobile-First Approach
+   ============================================ */
+
+/* ============================================
+   1. Mobile Devices (0px - 640px)
+   ============================================ */
+
+@media (max-width: 640px) {
+    /* Root Variables Adjustment */
+    :root {
+        --header-height: 48px;
+        --bottom-nav-height: 60px;
+        --font-size-base: 14px;
+        --spacing-lg: 12px;
+        --spacing-xl: 16px;
+    }
+
+    /* Header */
+    header {
+        height: var(--header-height);
+    }
+
+    .header-content {
+        padding: 0 var(--spacing-md);
+    }
+
+    .logo {
+        font-size: var(--font-size-lg);
+    }
+
+    .logo-icon {
+        font-size: var(--font-size-xl);
+    }
+
+    .header-actions {
+        gap: var(--spacing-sm);
+    }
+
+    /* Main Content */
+    main {
+        padding: var(--spacing-md);
+        padding-bottom: var(--main-padding-bottom);
+    }
+
+    /* Typography */
+    h1 {
+        font-size: var(--font-size-2xl);
+    }
+
+    h2 {
+        font-size: var(--font-size-xl);
+    }
+
+    h3 {
+        font-size: var(--font-size-lg);
+    }
+
+    /* Cards */
+    .card {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+        border-radius: var(--radius-md);
+    }
+
+    .card-header {
+        font-size: var(--font-size-base);
+        margin-bottom: var(--spacing-sm);
+        padding-bottom: var(--spacing-sm);
+    }
+
+    /* Buttons */
+    .btn {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: var(--font-size-xs);
+        border-radius: var(--radius-sm);
+    }
+
+    .btn-lg {
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: var(--font-size-sm);
+    }
+
+    /* Forms */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: var(--font-size-sm);
+        border-radius: var(--radius-sm);
+    }
+
+    label {
+        font-size: var(--font-size-xs);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    /* Grid */
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+        height: var(--bottom-nav-height);
+        padding: var(--spacing-xs) 0;
+    }
+
+    .bottom-nav a {
+        padding: var(--spacing-xs);
+        font-size: var(--font-size-xs);
+        gap: 2px;
+    }
+
+    .bottom-nav-icon {
+        font-size: var(--font-size-xl);
+    }
+
+    .bottom-nav-label {
+        font-size: 10px;
+    }
+
+    /* FAB */
+    .fab {
+        width: 48px;
+        height: 48px;
+        bottom: calc(var(--bottom-nav-height) + var(--spacing-md));
+        right: var(--spacing-md);
+        font-size: var(--font-size-xl);
+    }
+
+    [dir="rtl"] .fab {
+        right: auto;
+        left: var(--spacing-md);
+    }
+
+    /* Alerts */
+    .alert {
+        padding: var(--spacing-md);
+        gap: var(--spacing-sm);
+    }
+
+    .alert-icon {
+        font-size: var(--font-size-lg);
+    }
+
+    /* Stat Cards */
+    .stat-card {
+        padding: var(--spacing-md);
+    }
+
+    .stat-card-icon {
+        font-size: var(--font-size-2xl);
+    }
+
+    .stat-card-value {
+        font-size: var(--font-size-2xl);
+    }
+
+    /* Tabs */
+    .tabs {
+        gap: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-button {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: var(--font-size-xs);
+    }
+
+    .tab-button span:last-child {
+        display: none;
+    }
+
+    /* Modal */
+    .modal {
+        max-width: 95%;
+        max-height: 95vh;
+    }
+
+    .modal-header {
+        padding: var(--spacing-md);
+    }
+
+    .modal-body {
+        padding: var(--spacing-md);
+    }
+
+    .modal-footer {
+        padding: var(--spacing-md);
+        gap: var(--spacing-sm);
+    }
+
+    /* List Items */
+    .list-item {
+        padding: var(--spacing-sm) 0;
+    }
+
+    .list-item-icon {
+        font-size: var(--font-size-lg);
+        margin-right: var(--spacing-sm);
+    }
+
+    [dir="rtl"] .list-item-icon {
+        margin-right: 0;
+        margin-left: var(--spacing-sm);
+    }
+
+    /* Badges */
+    .badge {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 10px;
+    }
+
+    /* Spacing Utilities */
+    .mt-xl { margin-top: var(--spacing-lg); }
+    .mb-xl { margin-bottom: var(--spacing-lg); }
+    .p-xl { padding: var(--spacing-lg); }
+}
+
+/* ============================================
+   2. Tablets (641px - 1024px)
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    /* Root Variables Adjustment */
+    :root {
+        --header-height: 56px;
+        --bottom-nav-height: 64px;
+        --font-size-base: 15px;
+    }
+
+    /* Grid Adjustments */
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Main Content */
+    main {
+        padding: var(--spacing-lg);
+    }
+
+    /* Cards */
+    .card {
+        padding: var(--spacing-lg);
+    }
+
+    /* Forms */
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    /* Modal */
+    .modal {
+        max-width: 90%;
+    }
+}
+
+/* ============================================
+   3. Desktop (1025px and above)
+   ============================================ */
+
+@media (min-width: 1025px) {
+    /* Root Variables */
+    :root {
+        --header-height: 60px;
+        --bottom-nav-height: 0px;
+        --font-size-base: 16px;
+    }
+
+    /* Hide Bottom Navigation on Desktop */
+    .bottom-nav {
+        display: none;
+    }
+
+    /* Adjust Main Content */
+    main {
+        min-height: calc(100vh - var(--header-height));
+        padding: var(--spacing-xl);
+        padding-bottom: var(--spacing-xl);
+    }
+
+    /* Hide FAB on Desktop */
+    .fab {
+        display: none;
+    }
+
+    /* Cards */
+    .card {
+        padding: var(--spacing-xl);
+    }
+
+    /* Modal */
+    .modal {
+        max-width: 600px;
+    }
+
+    /* Grid */
+    .grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ============================================
+   4. Large Desktop (1441px and above)
+   ============================================ */
+
+@media (min-width: 1441px) {
+    .container {
+        max-width: 1200px;
+    }
+
+    main {
+        padding: var(--spacing-2xl);
+    }
+
+    .card {
+        padding: var(--spacing-2xl);
+    }
+}
+
+/* ============================================
+   5. Touch Device Optimizations
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+    /* Increase touch target sizes */
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .bottom-nav a {
+        min-height: 48px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select {
+        min-height: 44px;
+    }
+
+    /* Remove hover effects on touch devices */
+    .btn:hover {
+        transform: none;
+    }
+
+    .card:hover {
+        transform: none;
+    }
+
+    /* Adjust FAB for touch */
+    .fab {
+        width: 56px;
+        height: 56px;
+    }
+}
+
+/* ============================================
+   6. Landscape Orientation
+   ============================================ */
+
+@media (max-height: 600px) and (orientation: landscape) {
+    /* Reduce vertical padding */
+    main {
+        padding: var(--spacing-sm);
+    }
+
+    .card {
+        padding: var(--spacing-md);
+    }
+
+    h1 {
+        font-size: var(--font-size-xl);
+    }
+
+    h2 {
+        font-size: var(--font-size-lg);
+    }
+
+    /* Adjust bottom nav height */
+    :root {
+        --bottom-nav-height: 50px;
+    }
+}
+
+/* ============================================
+   7. High DPI Devices (Retina)
+   ============================================ */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Thinner borders for retina displays */
+    .card,
+    .btn,
+    input,
+    textarea,
+    select {
+        border-width: 0.5px;
+    }
+
+    /* Smoother shadows */
+    .card,
+    .btn {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+}
+
+/* ============================================
+   8. Print Styles
+   ============================================ */
+
+@media print {
+    header,
+    .bottom-nav,
+    .fab,
+    .theme-toggle,
+    .lang-toggle,
+    .btn-secondary,
+    .btn-outline {
+        display: none !important;
+    }
+
+    main {
+        padding: 0;
+        min-height: auto;
+    }
+
+    body {
+        background-color: white;
+        color: black;
+    }
+
+    .card {
+        page-break-inside: avoid;
+        border: 1px solid #ccc;
+    }
+
+    a {
+        color: black;
+        text-decoration: underline;
+    }
+}
+
+/* ============================================
+   9. Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   10. Dark Mode Specific Responsive
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    [data-theme="dark"] {
+        --shadow-color: rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* ============================================
+   11. Landscape Mobile (641px - 1024px height)
+   ============================================ */
+
+@media (max-height: 500px) {
+    main {
+        padding-top: var(--spacing-sm);
+        padding-bottom: var(--spacing-sm);
+    }
+
+    .card {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        gap: var(--spacing-sm);
+    }
+}
+
+/* ============================================
+   12. Foldable Devices
+   ============================================ */
+
+@media (screen-spanning: single-fold-vertical) {
+    main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-lg);
+    }
+}
+
+@media (screen-spanning: single-fold-horizontal) {
+    main {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        gap: var(--spacing-lg);
+    }
+}

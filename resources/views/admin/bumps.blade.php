@@ -5,6 +5,39 @@
 @section('content')
 <h2 style="margin-bottom: 24px;">إدارة المطبات</h2>
 
+<!-- Navigation Buttons -->
+<div class="admin-nav-grid" style="margin-bottom: 32px;">
+    <a href="{{ route('admin.dashboard') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">📊</div>
+        <div class="admin-nav-title">لوحة التحكم</div>
+        <div class="admin-nav-desc">نظرة عامة على النظام</div>
+    </a>
+
+    <a href="{{ route('admin.bumps') }}" class="admin-nav-card active">
+        <div class="admin-nav-icon">📍</div>
+        <div class="admin-nav-title">إدارة المطبات</div>
+        <div class="admin-nav-desc">مراجعة وإدارة المطبات</div>
+    </a>
+
+    <a href="{{ route('admin.users') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">👥</div>
+        <div class="admin-nav-title">إدارة المستخدمين</div>
+        <div class="admin-nav-desc">إدارة حسابات المستخدمين</div>
+    </a>
+
+    <a href="{{ route('admin.reports') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">📋</div>
+        <div class="admin-nav-title">التقارير</div>
+        <div class="admin-nav-desc">عرض وإدارة التقارير</div>
+    </a>
+
+    <a href="{{ route('admin.predictions') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">🧠</div>
+        <div class="admin-nav-title">التوقعات</div>
+        <div class="admin-nav-desc">إدارة التنبؤات الذكية</div>
+    </a>
+</div>
+
 <div class="card">
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
@@ -22,7 +55,15 @@
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <td style="padding: 12px;">{{ $bump->latitude }}, {{ $bump->longitude }}</td>
                     <td style="padding: 12px;">{{ $bump->source }}</td>
-                    <td style="padding: 12px;">{{ $bump->confidence_level }}%</td>
+                    @php
+                        $confidencePercent = match($bump->confidence_level ?? 'medium') {
+                            'high' => 90,
+                            'medium' => 65,
+                            'low' => 35,
+                            default => 50
+                        };
+                    @endphp
+                    <td style="padding: 12px;">{{ $confidencePercent }}%</td>
                     <td style="padding: 12px;">{{ $bump->report_count }}</td>
                     <td style="padding: 12px;">
                         <span style="background: {{ $bump->is_verified ? '#10b981' : '#f59e0b' }}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">

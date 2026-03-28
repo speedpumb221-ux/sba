@@ -5,6 +5,39 @@
 @section('content')
 <h2 style="margin-bottom: 24px;">إدارة التنبؤات الذكية</h2>
 
+<!-- Navigation Buttons -->
+<div class="admin-nav-grid" style="margin-bottom: 32px;">
+    <a href="{{ route('admin.dashboard') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">📊</div>
+        <div class="admin-nav-title">لوحة التحكم</div>
+        <div class="admin-nav-desc">نظرة عامة على النظام</div>
+    </a>
+
+    <a href="{{ route('admin.bumps') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">📍</div>
+        <div class="admin-nav-title">إدارة المطبات</div>
+        <div class="admin-nav-desc">مراجعة وإدارة المطبات</div>
+    </a>
+
+    <a href="{{ route('admin.users') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">👥</div>
+        <div class="admin-nav-title">إدارة المستخدمين</div>
+        <div class="admin-nav-desc">إدارة حسابات المستخدمين</div>
+    </a>
+
+    <a href="{{ route('admin.reports') }}" class="admin-nav-card">
+        <div class="admin-nav-icon">📋</div>
+        <div class="admin-nav-title">التقارير</div>
+        <div class="admin-nav-desc">عرض وإدارة التقارير</div>
+    </a>
+
+    <a href="{{ route('admin.predictions') }}" class="admin-nav-card active">
+        <div class="admin-nav-icon">🧠</div>
+        <div class="admin-nav-title">التوقعات</div>
+        <div class="admin-nav-desc">إدارة التنبؤات الذكية</div>
+    </a>
+</div>
+
 <div class="card">
     <table style="width: 100%; border-collapse: collapse;">
         <thead>

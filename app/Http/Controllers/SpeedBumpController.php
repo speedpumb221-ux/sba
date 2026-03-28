@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Auth;
 
 class SpeedBumpController extends Controller
 {
+    public function create()
+    {
+        return view('bumps.create');
+    }
     public function index()
     {
         $bumps = SpeedBump::paginate(12);
@@ -29,7 +33,8 @@ class SpeedBumpController extends Controller
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
             'description' => 'nullable|string|max:500',
-            'type' => 'nullable|string',
+            'type' => 'nullable|in:normal,speed_bump,hump,bump,rumble_strip',
+            'confidence_level' => 'in:low,medium,high',
         ]);
 
         // Use service to prevent duplicates within 20 meters
@@ -41,6 +46,7 @@ class SpeedBumpController extends Controller
             [
                 'description' => $validated['description'] ?? null,
                 'type' => $validated['type'] ?? 'normal',
+                'confidence_level' => $validated['confidence_level'] ?? 'medium',
                 'source' => 'user',
                 'created_by' => Auth::id(),
             ]
@@ -56,11 +62,17 @@ class SpeedBumpController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'bump' => $bump,
-            'message' => 'تم إضافة المطب بنجاح',
-        ]);
+        // Check if this is an AJAX request
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'bump' => $bump,
+                'message' => 'تم إضافة المطب بنجاح',
+            ]);
+        }
+
+        // For regular form submissions, redirect with success message
+        return redirect()->route('bumps.index')->with('success', 'تم إضافة المطب بنجاح');
     }
 
     public function update(Request $request, SpeedBump $bump)
@@ -110,7 +122,7 @@ class SpeedBumpController extends Controller
             if ($distance > $radius) continue;
 
             // map confidence to string level if available, fallback to numeric mapping
-            $confLevel = $bump->confidence_level ?? (isset($bump->confidence) ? ($bump->confidence >= 80 ? 'high' : ($bump->confidence >= 60 ? 'medium' : 'low')) : 'medium');
+            $confLevel = $bump->confidence_level ?? 'medium';
 
             $item = [
                 'id' => $bump->id,
@@ -246,11 +258,11 @@ class SpeedBumpController extends Controller
 
         // Update bump based on report
         if ($validated['report_type'] === 'confirm') {
-            $bump->incrementConfidence(5);
+            $bump->incrementConfidence();
         } elseif ($validated['report_type'] === 'false_positive') {
-            $bump->decrementConfidence(10);
+            $bump->decrementConfidence();
         } elseif ($validated['report_type'] === 'update') {
-            $bump->incrementConfidence(2);
+            $bump->incrementConfidence();
         }
 
         UserActivity::create([
@@ -275,7 +287,6 @@ class SpeedBumpController extends Controller
             'latitude',
             'longitude',
             'source',
-            'confidence',
             'confidence_level',
             'is_verified',
             'description',

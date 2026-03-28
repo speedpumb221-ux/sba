@@ -1,0 +1,558 @@
+/* ============================================
+   Speed & Prediction Indicators
+   مؤشرات السرعة والتنبؤ الذكي
+   ============================================ */
+
+/* ============================================
+   1. Speed Indicator Widget
+   ============================================ */
+
+.speed-indicator {
+    position: fixed;
+    top: var(--header-height);
+    left: var(--spacing-lg);
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    min-width: 200px;
+    animation: slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+[dir="rtl"] .speed-indicator {
+    left: auto;
+    right: var(--spacing-lg);
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.speed-indicator-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.speed-indicator-icon {
+    font-size: var(--font-size-2xl);
+}
+
+.speed-indicator-value {
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+    color: var(--primary);
+    text-align: center;
+    margin: var(--spacing-md) 0;
+    font-family: 'Courier New', monospace;
+}
+
+.speed-indicator-unit {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* Speed Bar */
+.speed-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin: var(--spacing-md) 0;
+}
+
+.speed-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+/* Speed Status */
+.speed-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    margin-top: var(--spacing-md);
+}
+
+.speed-status.safe {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.speed-status.moderate {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.speed-status.high {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* ============================================
+   2. Prediction Indicator
+   ============================================ */
+
+.prediction-indicator {
+    position: fixed;
+    top: var(--header-height);
+    right: var(--spacing-lg);
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    min-width: 240px;
+    animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+[dir="rtl"] .prediction-indicator {
+    right: auto;
+    left: var(--spacing-lg);
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.prediction-indicator-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.prediction-indicator-icon {
+    font-size: var(--font-size-2xl);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+}
+
+.prediction-status {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.prediction-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    font-size: var(--font-size-xs);
+}
+
+.prediction-item-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.prediction-item-value {
+    font-weight: 700;
+    color: var(--primary);
+    font-family: 'Courier New', monospace;
+}
+
+.prediction-item.active {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 3px solid #ef4444;
+}
+
+[dir="rtl"] .prediction-item.active {
+    border-left: none;
+    border-right: 3px solid #ef4444;
+}
+
+/* Confidence Meter */
+.confidence-meter {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}
+
+.confidence-meter-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    font-weight: 600;
+}
+
+.confidence-meter-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.confidence-meter-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+}
+
+.confidence-meter-text {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-xs);
+    text-align: center;
+    font-weight: 600;
+}
+
+/* ============================================
+   3. Real-time Metrics Display
+   ============================================ */
+
+.metrics-display {
+    position: fixed;
+    bottom: calc(var(--bottom-nav-height) + var(--spacing-lg));
+    left: var(--spacing-lg);
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    min-width: 200px;
+    animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+[dir="rtl"] .metrics-display {
+    left: auto;
+    right: var(--spacing-lg);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.metrics-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: var(--font-size-sm);
+}
+
+.metrics-item:last-child {
+    border-bottom: none;
+}
+
+.metrics-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.metrics-value {
+    color: var(--primary);
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+}
+
+/* ============================================
+   4. Alert Notification Styles
+   ============================================ */
+
+.alert-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2000;
+    background: white;
+    border-radius: var(--radius-2xl);
+    padding: var(--spacing-2xl);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    min-width: 300px;
+    animation: alertBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes alertBounce {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.alert-notification-icon {
+    font-size: 48px;
+    margin-bottom: var(--spacing-lg);
+}
+
+.alert-notification-title {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+}
+
+.alert-notification-message {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.6;
+}
+
+.alert-notification-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+}
+
+.alert-detail-item {
+    text-align: center;
+}
+
+.alert-detail-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.alert-detail-value {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--primary);
+    font-family: 'Courier New', monospace;
+}
+
+/* ============================================
+   5. Responsive Design
+   ============================================ */
+
+@media (max-width: 640px) {
+    .speed-indicator {
+        top: auto;
+        bottom: calc(var(--bottom-nav-height) + var(--spacing-md));
+        left: var(--spacing-md);
+        min-width: 160px;
+        padding: var(--spacing-md);
+    }
+
+    [dir="rtl"] .speed-indicator {
+        left: auto;
+        right: var(--spacing-md);
+    }
+
+    .prediction-indicator {
+        position: absolute;
+        top: var(--header-height);
+        right: var(--spacing-md);
+        min-width: 200px;
+        padding: var(--spacing-md);
+    }
+
+    [dir="rtl"] .prediction-indicator {
+        right: auto;
+        left: var(--spacing-md);
+    }
+
+    .metrics-display {
+        display: none;
+    }
+
+    .speed-indicator-value {
+        font-size: var(--font-size-2xl);
+    }
+
+    .alert-notification {
+        min-width: 90%;
+        padding: var(--spacing-lg);
+    }
+
+    .alert-notification-icon {
+        font-size: 36px;
+    }
+
+    .alert-notification-title {
+        font-size: var(--font-size-lg);
+    }
+
+    .alert-notification-details {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .speed-indicator {
+        min-width: 180px;
+    }
+
+    .prediction-indicator {
+        min-width: 220px;
+    }
+
+    .metrics-display {
+        min-width: 180px;
+    }
+}
+
+/* ============================================
+   6. Dark Mode
+   ============================================ */
+
+[data-theme="dark"] .speed-indicator,
+[data-theme="dark"] .prediction-indicator,
+[data-theme="dark"] .metrics-display {
+    background: rgba(31, 41, 55, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .alert-notification {
+    background: rgba(31, 41, 55, 0.98);
+}
+
+[data-theme="dark"] .speed-bar,
+[data-theme="dark"] .confidence-meter-bar,
+[data-theme="dark"] .prediction-item,
+[data-theme="dark"] .confidence-meter {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .metrics-item,
+[data-theme="dark"] .alert-notification-details {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   7. Animation Effects
+   ============================================ */
+
+@keyframes speedFluctuation {
+    0%, 100% {
+        transform: scaleY(1);
+    }
+    50% {
+        transform: scaleY(1.05);
+    }
+}
+
+.speed-indicator-value.fluctuating {
+    animation: speedFluctuation 0.5s ease-in-out;
+}
+
+@keyframes predictionPulse {
+    0%, 100% {
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    }
+    50% {
+        box-shadow: 0 12px 40px rgba(239, 68, 68, 0.3);
+    }
+}
+
+.prediction-indicator.alert {
+    animation: predictionPulse 0.8s ease-in-out infinite;
+}
+
+/* ============================================
+   8. Smooth Transitions
+   ============================================ */
+
+.speed-indicator,
+.prediction-indicator,
+.metrics-display,
+.speed-bar-fill,
+.confidence-meter-fill {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================
+   9. Print Styles
+   ============================================ */
+
+@media print {
+    .speed-indicator,
+    .prediction-indicator,
+    .metrics-display,
+    .alert-notification {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   10. Accessibility
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .speed-indicator,
+    .prediction-indicator,
+    .metrics-display,
+    .speed-indicator-icon,
+    .prediction-indicator-icon {
+        animation: none !important;
+    }
+}

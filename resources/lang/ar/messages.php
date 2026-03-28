@@ -51,7 +51,7 @@ return [
     "Warning" => "تحذير",
     "All rights reserved" => "جميع الحقوق محفوظة",
     "Statistics" => "الإحصائيات",
-    "Verified" => "المؤكدة",
+    "Verified" => "مؤكد",
     "Alert Distance" => "مسافة التنبيه",
     "meters" => "متر",
     "Start Tracking" => "بدء التتبع",

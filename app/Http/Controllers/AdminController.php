@@ -88,4 +88,12 @@ class AdminController extends Controller
 
         return back()->with('success', 'تم تحويل التنبؤ إلى مطب');
     }
+
+    public function testing()
+    {
+        // Get all speed bumps for testing
+        $bumps = SpeedBump::where('is_verified', true)->get();
+        
+        return view('admin.testing', compact('bumps'));
+    }
 }

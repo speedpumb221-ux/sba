@@ -1,0 +1,625 @@
+/* ============================================
+   خريطة حواجز السرعة - تأثيرات 3D احترافية
+   Professional 3D Map Effects
+   ============================================ */
+
+/* ============================================
+   1. Map Container 3D Effects
+   ============================================ */
+
+.map-container {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    bottom: var(--bottom-nav-height);
+    width: 100%;
+    height: calc(100vh - var(--header-height) - var(--bottom-nav-height));
+    z-index: 1;
+    perspective: 1200px;
+    overflow: hidden;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    background-color: #f0f0f0;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+}
+
+/* ============================================
+   2. Leaflet Map Enhancements
+   ============================================ */
+
+.leaflet-container {
+    background: linear-gradient(135deg, #e8f4f8 0%, #f0f0f0 100%);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Improve tile layer appearance */
+.leaflet-tile {
+    filter: brightness(1.05) contrast(1.1);
+    transition: filter 0.3s ease;
+}
+
+.leaflet-tile:hover {
+    filter: brightness(1.1) contrast(1.15);
+}
+
+/* ============================================
+   3. Marker 3D Effects
+   ============================================ */
+
+/* Bump Marker Base */
+.bump-marker {
+    background-color: var(--danger);
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.3),
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: translateZ(0) scale(1);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+}
+
+.bump-marker:hover {
+    transform: translateZ(10px) scale(1.3);
+    box-shadow: 
+        0 16px 32px rgba(0, 0, 0, 0.4),
+        0 8px 16px rgba(0, 0, 0, 0.3),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+}
+
+/* Verified Marker */
+.bump-marker.verified {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 
+        0 8px 16px rgba(16, 185, 129, 0.4),
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.bump-marker.verified:hover {
+    box-shadow: 
+        0 16px 32px rgba(16, 185, 129, 0.5),
+        0 8px 16px rgba(0, 0, 0, 0.3),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+/* Unverified Marker */
+.bump-marker:not(.verified) {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 
+        0 8px 16px rgba(239, 68, 68, 0.4),
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+/* User Location Marker */
+.user-marker {
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 
+        0 8px 20px rgba(59, 130, 246, 0.5),
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    animation: pulse-3d 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-3d {
+    0%, 100% {
+        box-shadow: 
+            0 8px 20px rgba(59, 130, 246, 0.5),
+            0 4px 12px rgba(0, 0, 0, 0.3),
+            inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+            inset 0 2px 4px rgba(255, 255, 255, 0.4);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 
+            0 12px 28px rgba(59, 130, 246, 0.6),
+            0 6px 16px rgba(0, 0, 0, 0.4),
+            inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+            inset 0 2px 4px rgba(255, 255, 255, 0.4);
+        transform: scale(1.1);
+    }
+}
+
+/* ============================================
+   4. Leaflet Controls 3D
+   ============================================ */
+
+.leaflet-control-container .leaflet-control {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--text-primary);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-lg);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.15),
+        0 4px 16px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.leaflet-control-container .leaflet-control:hover {
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.2),
+        0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+    transition: all 0.2s ease !important;
+}
+
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+    background-color: rgba(59, 130, 246, 0.95) !important;
+    color: white !important;
+    box-shadow: 
+        0 6px 16px rgba(59, 130, 246, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    transform: scale(1.05);
+}
+
+/* ============================================
+   5. Map Controls Floating Cards
+   ============================================ */
+
+.leaflet-control-container .leaflet-control,
+.leaflet-control-layers,
+.leaflet-control-layers-toggle,
+.leaflet-control-zoom {
+    z-index: 1200 !important;
+}
+
+.map-controls {
+    position: absolute;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 2000;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+[dir="rtl"] .map-controls {
+    right: auto;
+    left: var(--spacing-lg);
+}
+
+.control-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    box-shadow: 
+        0 16px 40px rgba(0, 0, 0, 0.15),
+        0 8px 20px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    min-width: 280px;
+    max-width: 320px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.3s ease;
+}
+
+.control-card:hover {
+    box-shadow: 
+        0 20px 48px rgba(0, 0, 0, 0.2),
+        0 12px 28px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+}
+
+/* Button pressed visual feedback */
+.btn-pressed {
+    transform: scale(0.98) !important;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.12) !important;
+    opacity: 0.95;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ============================================
+   6. Stats Box 3D
+   ============================================ */
+
+.stats-box {
+    position: absolute;
+    bottom: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 900;
+    pointer-events: auto;
+    animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+[dir="rtl"] .stats-box {
+    left: auto;
+    right: var(--spacing-lg);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stats-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.stats-item:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateX(-4px);
+}
+
+[dir="rtl"] .stats-item:hover {
+    transform: translateX(4px);
+}
+
+.stats-item:last-child {
+    margin-bottom: 0;
+}
+
+.stats-value {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: var(--font-size-base);
+}
+
+/* ============================================
+   7. Popup 3D Effects
+   ============================================ */
+
+.leaflet-popup-content-wrapper {
+    background: rgba(255, 255, 255, 0.98);
+    color: var(--text-primary);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-xl);
+    box-shadow: 
+        0 16px 40px rgba(0, 0, 0, 0.2),
+        0 8px 20px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: var(--spacing-lg);
+    animation: popupAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popupAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.leaflet-popup-tip {
+    background-color: rgba(255, 255, 255, 0.98);
+    border-top-color: rgba(0, 0, 0, 0.1);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.bump-popup {
+    padding: var(--spacing-md);
+    text-align: right;
+}
+
+.bump-popup-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    font-weight: 700;
+    font-size: var(--font-size-lg);
+    color: var(--text-primary);
+}
+
+.bump-popup-icon {
+    font-size: var(--font-size-3xl);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.bump-popup-info {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-md) 0;
+    border-radius: var(--radius-md);
+}
+
+.bump-popup-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-xs) 0;
+}
+
+.bump-popup-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.bump-popup-value {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.bump-popup-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.bump-popup-actions .btn {
+    flex: 1;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-xs);
+    transition: all 0.2s ease;
+}
+
+.bump-popup-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   8. Alert Box 3D
+   ============================================ */
+
+.alert-box {
+    position: absolute;
+    top: var(--spacing-lg);
+    left: var(--spacing-lg);
+    z-index: 10;
+    max-width: 320px;
+    animation: slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+[dir="rtl"] .alert-box {
+    left: auto;
+    right: var(--spacing-lg);
+    animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.alert-box .alert {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-lg);
+    box-shadow: 
+        0 12px 32px rgba(0, 0, 0, 0.15),
+        0 6px 16px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: var(--spacing-lg);
+}
+
+/* ============================================
+   9. Responsive Map 3D
+   ============================================ */
+
+@media (max-width: 640px) {
+    .map-controls {
+        top: var(--spacing-md);
+        right: var(--spacing-md);
+        gap: var(--spacing-sm);
+    }
+
+    [dir="rtl"] .map-controls {
+        right: auto;
+        left: var(--spacing-md);
+    }
+
+    .control-card {
+        min-width: 240px;
+        max-width: 280px;
+        padding: var(--spacing-md);
+    }
+
+    .stats-box {
+        bottom: var(--spacing-md);
+        right: var(--spacing-md);
+    }
+
+    [dir="rtl"] .stats-box {
+        right: auto;
+        left: var(--spacing-md);
+    }
+
+    .alert-box {
+        top: var(--spacing-md);
+        left: var(--spacing-md);
+        max-width: 240px;
+    }
+
+    [dir="rtl"] .alert-box {
+        left: auto;
+        right: var(--spacing-md);
+    }
+
+    .bump-marker {
+        box-shadow: 
+            0 6px 12px rgba(0, 0, 0, 0.25),
+            0 3px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .user-marker {
+        box-shadow: 
+            0 6px 16px rgba(59, 130, 246, 0.4),
+            0 3px 8px rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* ============================================
+   10. Dark Mode Map 3D
+   ============================================ */
+
+[data-theme="dark"] .leaflet-container {
+    background: linear-gradient(135deg, #1a2332 0%, #0f1419 100%);
+}
+
+[data-theme="dark"] .leaflet-tile {
+    filter: brightness(0.8) contrast(1.2);
+}
+
+[data-theme="dark"] .leaflet-tile:hover {
+    filter: brightness(0.9) contrast(1.3);
+}
+
+[data-theme="dark"] .leaflet-control-container .leaflet-control {
+    background: rgba(31, 41, 55, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .control-card {
+    background: rgba(31, 41, 55, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 16px 40px rgba(0, 0, 0, 0.4),
+        0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .leaflet-popup-content-wrapper {
+    background: rgba(31, 41, 55, 0.98);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 16px 40px rgba(0, 0, 0, 0.4),
+        0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .leaflet-popup-tip {
+    background-color: rgba(31, 41, 55, 0.98);
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .alert-box .alert {
+    background: rgba(31, 41, 55, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 12px 32px rgba(0, 0, 0, 0.4),
+        0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   11. Advanced 3D Animations
+   ============================================ */
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.control-card {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes glow {
+    0%, 100% {
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+    }
+    50% {
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+    }
+}
+
+.bump-marker {
+    animation: glow 2s ease-in-out infinite;
+}
+
+/* ============================================
+   12. Parallax Effect (Optional)
+   ============================================ */
+
+@supports (backdrop-filter: blur(10px)) {
+    .control-card,
+    .leaflet-popup-content-wrapper,
+    .alert-box .alert {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px) saturate(180%);
+        -webkit-backdrop-filter: blur(10px) saturate(180%);
+    }
+
+    [data-theme="dark"] .control-card,
+    [data-theme="dark"] .leaflet-popup-content-wrapper,
+    [data-theme="dark"] .alert-box .alert {
+        background: rgba(31, 41, 55, 0.85);
+    }
+}
+
+/* ============================================
+   13. Smooth Transitions
+   ============================================ */
+
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.leaflet-marker-icon,
+.leaflet-popup,
+.leaflet-control {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
