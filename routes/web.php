@@ -16,6 +16,15 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Locale switcher (updates session)
+Route::get('/locale/{lang}', function ($lang) {
+    $allowed = ['en', 'ar'];
+    if (in_array($lang, $allowed)) {
+        session(['locale' => $lang]);
+    }
+    return redirect()->back();
+})->name('locale.switch');
+
 // Auth Routes
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');

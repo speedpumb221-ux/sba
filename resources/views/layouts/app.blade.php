@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>@yield('title', 'تطبيق حواجز السرعة')</title>
+    <title>@yield('title', __('messages.Speed Bumps App'))</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="تطبيق حواجز السرعة - تطبيق ذكي لتتبع وتقرير حواجز السرعة">
     <meta name="theme-color" content="#1e40af">
@@ -155,13 +155,16 @@
         <div class="header-content">
             <div class="logo">
                 <span class="logo-icon">🚗</span>
-                <span>حواجز السرعة</span>
+                <span>{{ __('messages.Speed Bumps App') }}</span>
             </div>
             
             <div class="header-actions">
-                <button id="theme-toggle" class="theme-toggle" title="تبديل الوضع الليلي" aria-label="تبديل الوضع الليلي">
+                <button id="theme-toggle" class="theme-toggle" title="{{ __('messages.Switch to Dark Mode') }}" aria-label="{{ __('messages.Switch to Dark Mode') }}">
                     🌙
                 </button>
+                <div style="display:inline-block; margin-left:8px;">
+                    <button id="lang-switch" class="theme-toggle" title="{{ app()->getLocale() === 'ar' ? __('messages.Switch to English') : __('messages.Switch to Arabic') }}" aria-label="language switch">{{ app()->getLocale() === 'ar' ? 'EN' : 'ع' }}</button>
+                </div>
                 @auth
                     <a href="{{ route('profile.show') }}" class="theme-toggle" title="الملف الشخصي" aria-label="الملف الشخصي">
                         👤
@@ -234,19 +237,19 @@
         @auth
             <a href="{{ route('dashboard') }}" class="nav-item">
                 <span class="bottom-nav-icon">🏠</span>
-                <span class="bottom-nav-label">الرئيسية</span>
+                <span class="bottom-nav-label">{{ __('messages.Home') }}</span>
             </a>
             <a href="{{ route('bumps.map') }}" class="nav-item">
                 <span class="bottom-nav-icon">🗺️</span>
-                <span class="bottom-nav-label">الخريطة</span>
+                <span class="bottom-nav-label">{{ __('messages.Map') }}</span>
             </a>
             <a href="{{ route('bumps.index') }}" class="nav-item">
                 <span class="bottom-nav-icon">📍</span>
-                <span class="bottom-nav-label">المطبات</span>
+                <span class="bottom-nav-label">{{ __('messages.Speed Bumps') }}</span>
             </a>
             <a href="{{ route('profile.show') }}" class="nav-item">
                 <span class="bottom-nav-icon">👤</span>
-                <span class="bottom-nav-label">الملف الشخصي</span>
+                <span class="bottom-nav-label">{{ __('messages.Profile') }}</span>
             </a>
             @if(Auth::user()->is_admin)
                 <a href="{{ route('admin.dashboard') }}" class="nav-item">
@@ -268,6 +271,18 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}"></script>
+    <script>
+        (function(){
+            var btn = document.getElementById('lang-switch');
+            if(!btn) return;
+            btn.addEventListener('click', function(){
+                try{
+                    var next = '{{ app()->getLocale() === "ar" ? "en" : "ar" }}';
+                    window.location.href = '/locale/' + next;
+                }catch(e){ console.warn('Language switch failed', e); }
+            });
+        })();
+    </script>
     <script>
     (function(){
         function playAlertSound(type){
@@ -329,6 +344,39 @@
     </script>
 
     {{-- Bust cached service-worker copy when updating alert script by adding version param --}}
+    <button id="pwa-install-btn" aria-hidden="true" style="display:none; position:fixed; bottom:88px; left:16px; z-index:200000; padding:10px 14px; border-radius:10px; background:#059669; color:#fff; border:none; box-shadow:0 8px 20px rgba(0,0,0,0.18); font-weight:600;">تثبيت التطبيق</button>
+
+    <script>
+    (function(){
+        var btn = document.getElementById('pwa-install-btn');
+        var deferredPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', function(e){
+            try{ e.preventDefault(); }catch(_){ }
+            deferredPrompt = e;
+            if(btn){ btn.style.display = 'block'; btn.setAttribute('aria-hidden','false'); }
+        });
+
+        function hideBtn(){ if(btn){ btn.style.display = 'none'; btn.setAttribute('aria-hidden','true'); } }
+
+        if(btn){
+            btn.addEventListener('click', function(){
+                if(!deferredPrompt) return;
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function(choice){
+                    if(choice && choice.outcome === 'accepted'){ hideBtn(); }
+                    deferredPrompt = null;
+                }).catch(function(){ deferredPrompt = null; });
+            });
+        }
+
+        window.addEventListener('appinstalled', function(){
+            deferredPrompt = null; hideBtn();
+            try{ if(window.AlertManager) AlertManager.create('تم تثبيت التطبيق','success',2000); }catch(e){}
+        });
+    })();
+    </script>
+
     <script src="{{ asset('js/nearby-alerts-fixed.js') }}?v=2"></script>
     @yield('scripts')
 </body>
